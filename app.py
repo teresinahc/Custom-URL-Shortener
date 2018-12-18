@@ -1,8 +1,11 @@
-# -*- coding: utf-8 -*-
-
 from flask import Flask, render_template, request, redirect
-import sqlite3 as sql
 import requests
+
+from pymongo import MongoClient
+
+client = MongoClient('localhost', 27017)
+
+database = client['custom_url']
 
 app = Flask(__name__)
 
@@ -19,10 +22,12 @@ def short():
         custom = request.form['custom']
         if not longurl and custom:
             return 'Error <script>alert("Invalid Credentials");</script>'
-        if longurl.startswith("http://" or "https://"):
-            pass
-        else:
-            longurl = str("http://"+str(longurl))
+        if longurl.startswith("http://"):
+            longurl = longurl.replace("http://", "")
+        elif longurl.startswith("https://"):
+            longurl = longurl.replace("https://", "")
+
+        longurl = str("https://"+str(longurl))
 
         try:
             r = requests.get(longurl)
@@ -38,39 +43,22 @@ def short():
             document.getElementsByTagName('head')[0].appendChild(meta);
             </script>"""
 
-        print (longurl)
-        print (custom)
-        conn = sql.connect('urls.db')
-        cursor = conn.cursor()
+        data = {'longurl': longurl, 'custom': custom}
+        custom_url = database.urls.insert(data)
+        print(custom_url)
 
-        try:
-            cursor.execute("INSERT INTO urls(longurl,custom) VALUES (?,?);",
-                           (str(longurl), str(custom)))
-
-        except ValueError:
-            return """Invalid/Already existing custom url
-               <script>alert("Invalid/Already existing custom url");
-               var meta = document.createElement('meta');
-               meta.httpEquiv = "REFRESH";
-               meta.content = "0;URL=/";
-               document.getElementsByTagName('head')[0].appendChild(meta);
-               </script>"""
-        conn.commit()
-        conn.close()
         url = "http://127.0.0.1:5000/shortener/"+custom
-
+        print(url)
         return 'Live at <a target="_blank" href="'+url+'">'+url+'</a>'
     return ""
 
 
 @app.route('/shortener/<custom>', methods=['GET', 'POST'])
 def final(custom):
-
-    conn = sql.connect('urls.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM urls WHERE custom=?;', (str(custom),))
-    for row in cursor.fetchall():
-        return_this = row[0]
+    data = database.urls.find({'custom': (str(custom))})
+    print(data)
+    for return_this in data:
+        return_this = return_this.get('longurl')
 
     return redirect(return_this, code=302)
 
