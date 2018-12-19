@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah" rel="stylesheet"> 
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+            <a class="navbar-brand font-cursive" href="#">
+                <img src="/static/img/thc.png" width="35" height="35" class="d-inline-block align-top"
+                    alt="">
+                    Teresina Hacker Clube
+            </a>
+        </nav>
+    {% block content %}
+    {% endblock %}
+</body>
+
+</html>

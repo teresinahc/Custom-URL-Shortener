@@ -34,14 +34,9 @@ def short():
             if r.status_code == 200:
                 pass
             else:
-                return 'Invalid URL <script>alert("Invalid URL");</script>'
+                return render_template('error.html')
         except ValueError:
-            return """Invalid URL <script>alert("Invalid URL");
-            var meta = document.createElement('meta');
-            meta.httpEquiv = "REFRESH";
-            meta.content = "0;URL=/";
-            document.getElementsByTagName('head')[0].appendChild(meta);
-            </script>"""
+            return render_template('error.html')
 
         data = {'longurl': longurl, 'custom': custom}
         custom_url = database.urls.insert(data)
@@ -49,8 +44,8 @@ def short():
 
         url = "http://127.0.0.1:5000/shortener/"+custom
         print(url)
-        return 'Live at <a target="_blank" href="'+url+'">'+url+'</a>'
-    return ""
+        #return 'Live at <a target="_blank" href="'+url+'">'+url+'</a>'
+        return render_template('result.html', url=url)
 
 
 @app.route('/shortener/<custom>', methods=['GET', 'POST'])
